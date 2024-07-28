@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects</title>
+</head>
+
+<body>
+    <h1>Generic Views and Django State Persistence</h1>
+    <h2>Student Enrollment System</h2>
+    <p>
+        Step 1: Set up the Django app and models: <br>
+        First, create a Django app for student registration and course management:
+        <code>python manage.py startapp registration_app</code> <br>
+        Define the models for Course and Student in <code>registration_app/models.py</code>:
+    </p>
+    <pre>
+        from django.db import models
+
+        class Course(models.Model):
+            name = models.CharField(max_length=100)
+            description = models.TextField()
+
+            def __str__(self):
+                return self.name
+
+        class Student(models.Model):
+            name = models.CharField(max_length=100)
+            email = models.EmailField()
+            courses = models.ManyToManyField(Course, related_name='students')
+
+            def __str__(self):
+                return self.name
+    </pre>
+    <p>
+        Step 2: Create views using generic class-based views: <br>
+        Define views using Django's generic class-based views for listing students and displaying student details.
+        Create a file named <code>views.py</code> in the <code>registration_app</code> directory and add the following
+        code:
+    </p>
+    <pre>
+        from django.views.generic import ListView, DetailView
+        from .models import Course, Student
+
+        class CourseListView(ListView):
+            model = Course
+            template_name = 'registration_app/course_list.html'
+
+        class StudentDetailView(DetailView):
+            model = Student
+            template_name = 'registration_app/student_detail.html'
+    </pre>
+    <p>
+        Step 3: Create URL patterns: <br>
+        Define URL patterns in the <code>urls.py</code> file of the <code>registration_app</code> app to map views to
+        URLs:
+    </p>
+    <pre>
+        from django.urls import path
+        from . import views
+
+        urlpatterns = [
+            path('courses/', views.CourseListView.as_view(), name='course_list'),
+            path('student/<int:pk>/', views.StudentDetailView.as_view(), name='student_detail'),
+        ]
+    </pre>
+    <p>
+        Step 4: Create HTML templates: <br>
+        Create HTML templates to display the course list, student list, and student details. In the
+        <code>registration_app/templates/registration_app</code> directory, create the following templates: <br>
+        <b>course_list.html:</b>
+    </p>
+    <pre>
+        &lt;!DOCTYPE html&gt;
+        &lt;html&gt;
+        &lt;head&gt;
+            &lt;title&gt;Course List&lt;/title&gt;
+        &lt;/head&gt;
+        &lt;body&gt;
+            &lt;h1&gt;Course List&lt;/h1&gt;
+            &lt;ul&gt;
+                {% for course in object_list %}
+                &lt;li&gt;&lt;a href="{% url 'student_list' course.pk %}"&gt;{{ course.name }}&lt;/a&gt;&lt;/li&gt;
+                {% endfor %}
+            &lt;/ul&gt;
+        &lt;/body&gt;
+        &lt;/html&gt;
+    </pre>
+    <p><b>student_list.html:</b></p>
+    <pre>
+        &lt;!DOCTYPE html&gt;
+        &lt;html&gt;
+        &lt;head&gt;
+            &lt;title&gt;Student List&lt;/title&gt;
+        &lt;/head&gt;
+        &lt;body&gt;
+            &lt;h1&gt;Students Registered for {{ course.name }}&lt;/h1&gt;
+            &lt;ul&gt;
+                {% for student in course.students.all %}
+                &lt;li&gt;&lt;a href="{% url 'student_detail' student.pk %}"&gt;{{ student.name }}&lt;/a&gt;&lt;/li&gt;
+                {% endfor %}
+            &lt;/ul&gt;
+        &lt;/body&gt;
+        &lt;/html&gt;
+    </pre>
+    <p><b>student_detail.html:</b></p>
+    <pre>
+        &lt;!DOCTYPE html&gt;
+        &lt;html&gt;
+        &lt;head&gt;
+            &lt;title&gt;Student Detail&lt;/title&gt;
+        &lt;/head&gt;
+        &lt;body&gt;
+            &lt;h1&gt;{{ object.name }}&lt;/h1&gt;
+            &lt;p&gt;Email: {{ object.email }}&lt;/p&gt;
+            &lt;p&gt;Courses:&lt;/p&gt;
+            &lt;ul&gt;
+                {% for course in object.courses.all %}
+                &lt;li&gt;{{ course.name }}&lt;/li&gt;
+                {% endfor %}
+            &lt;/ul&gt;
+        &lt;/body&gt;
+        &lt;/html&gt;
+    </pre>
+    <p>
+        Step 5: Update settings and URLs: <br>
+        Add the <code>registration_app</code> to the <code>INSTALLED_APPS</code> in your project's settings file
+        (<code>settings.py</code>). Also, include the app's URLs in the project's <code>urls.py</code> file:
+    </p>
+    <pre>
+        # settings.py
+        INSTALLED_APPS = [
+            ...
+            'registration_app',
+            ...
+        ]
+
+        # urls.py (project-level)
+        from django.contrib import admin
+        from django.urls import path, include
+
+        urlpatterns = [
+            path('admin/', admin.site.urls),
+            path('registration/', include('registration_app.urls')),
+        ]
+    </pre>
+    <p>
+        Step 6: Run migrations and start the server: <br>
+        Apply migrations to create database tables for the models and start the Django development server:
+    </p>
+    <pre>
+        python manage.py makemigrations
+        python manage.py migrate
+        python manage.py runserver
+    </pre>
+    <p>
+        Step 7: Now, you can access the app in your browser at <code>http://127.0.0.1:8000/registration/courses/</code>
+        to view the course list, click on a course to see the list of students registered for that course
+        (<code>http://127.0.0.1:8000/registration/student/&lt;course_id&gt;/</code>), and click on a student's name to
+        view their details (<code>http://127.0.0.1:8000/registration/student/&lt;student_id&gt;/</code>).
+    </p>
+
+    <h2>CSV and PDF Generation</h2>
+    <p>
+        Step 1: Install Required Libraries: <br>
+        First, you need to install the necessary libraries for CSV and PDF generation. You can do this using pip:
+    </p>
+    <pre>
+        pip install django-csv django-pdf
+    </pre>
+    <p>
+        Step 2: Create CSV Generation Function: <br>
+        In your Django app, create a function to generate a CSV file based on the data from your models. For example, in
+        a file named <code>utils.py</code>:
+    </p>
+    <pre>
+        import csv
+        from django.http import HttpResponse
+
+        def generate_csv_response(queryset, filename):
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
+
+            writer = csv.writer(response)
+            # Write header row based on model fields
+            writer.writerow([field.name for field in queryset.model._meta.fields])
+
+            # Write data rows
+            for obj in queryset:
+                writer.writerow([getattr(obj, field.name) for field in queryset.model._meta.fields])
+
+            return response
+    </pre>
+    <p>
+        Step 3: Create PDF Generation Function: <br>
+        Similarly, create a function to generate a PDF file based on the data from your models. You can use the
+        <code>reportlab</code> library for PDF generation. Install it using pip if you haven't already:
+    </p>
+    <pre>
+        pip install reportlab
+    </pre>
+    <p>Then, in <code>utils.py</code>, add the PDF generation function:</p>
+    <pre>
+        from reportlab.pdfgen import canvas
+        from django.http import HttpResponse
+
+        def generate_pdf_response(queryset, filename):
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{filename}.pdf"'
+
+            # Create PDF document
+            pdf = canvas.Canvas(response)
+            y = 800  # Initial y position for writing text
+
+            # Write header
+            pdf.setFont("Helvetica-Bold", 12)
+            pdf.drawString(100, y, "Student Data")
+
+            # Write data
+            pdf.setFont("Helvetica", 10)
+            y -= 20  # Move down for data rows
+            for obj in queryset:
+                data = f"Name: {obj.name}, Email: {obj.email}"  # Customize based on your model fields
+                pdf.drawString(100, y, data)
+                y -= 15  # Move down for next row
+
+            pdf.showPage()
+            pdf.save()
+
+            return response
+    </pre>
+    <p>
+        Step 4: Add URL Routes: <br>
+        Define URL routes in your app's <code>urls.py</code> to map to the CSV and PDF generation views:
+    </p>
+    <pre>
+        from django.urls import path
+        from . import views
+
+        urlpatterns = [
+            path('generate-csv/', views.generate_csv_view, name='generate_csv'),
+            path('generate-pdf/', views.generate_pdf_view, name='generate_pdf'),
+        ]
+    </pre>
+    <p>
+        Step 5: Create Views: <br>
+        In your app's <code>views.py</code>, create views that use the CSV and PDF generation functions:
+    </p>
+    <pre>
+        from django.shortcuts import render
+        from django.http import HttpResponse
+        from .models import Student
+        from .utils import generate_csv_response, generate_pdf_response
+
+        def generate_csv_view(request):
+            queryset = Student.objects.all()  # Get data from your models
+            response = generate_csv_response(queryset, 'students_data')
+            return response
+
+        def generate_pdf_view(request):
+            queryset = Student.objects.all()  # Get data from your models
+            response = generate_pdf_response(queryset, 'students_data')
+            return response
+    </pre>
+    <p>
+        Step 6: Link to Views in Templates or Views: <br>
+        In your templates or views, add links or buttons to trigger CSV and PDF generation:
+    </p>
+    <pre>
+        &lt;!-- Example in a template --&gt;
+        &lt;a href="{% url 'generate_csv' %}"&gt;Download CSV&lt;/a&gt;
+        &lt;a href="{% url 'generate_pdf' %}"&gt;Download PDF&lt;/a&gt;
+    </pre>
+    <p>
+        Step 7: Test the App: <br>
+        Run your Django development server and test the CSV and PDF generation functionality by navigating to the
+        appropriate URLs (<code>/generate-csv/</code> and <code>/generate-pdf/</code>) and clicking the download links.
+    </p>
+</body>
+
+</html>

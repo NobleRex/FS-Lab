@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects</title>
+</head>
+
+<body>
+    <h1>Project 1: Displaying Lists of Fruits and Students</h1>
+    <p>Step 1: Set Up Django Project and App</p>
+    <p>Create a new Django project and navigate into the project directory:</p>
+    <pre><code>django-admin startproject event_manager
+cd event_manager
+python manage.py startapp events</code></pre>
+
+    <p>Step 2: Define Models</p>
+    <p>Open the events/models.py file in your editor and define two models: Fruit and Student.</p>
+    <pre><code>from django.db import models
+
+class Fruit(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+class Student(models.Model):
+    name = models.CharField(max_length=100)
+    event = models.CharField(max_length=100)
+    selected = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name</code></pre>
+
+    <p>Step 3: Register Models in Admin</p>
+    <p>Open the events/admin.py file and register the models.</p>
+    <pre><code>from django.contrib import admin
+from .models import Fruit, Student
+
+admin.site.register(Fruit)
+admin.site.register(Student)</code></pre>
+
+    <p>Step 4: Run Migrations</p>
+    <p>Apply the migrations to create the database tables:</p>
+    <pre><code>python manage.py makemigrations
+python manage.py migrate</code></pre>
+
+    <p>Step 5: Create Views and Templates</p>
+    <p>Create views and templates to display the lists of fruits and students.</p>
+    <pre><code>from django.shortcuts import render
+from .models import Fruit, Student
+
+def fruit_list(request):
+    fruits = Fruit.objects.all()
+    return render(request, 'events/fruit_list.html', {'fruits': fruits})
+
+def student_list(request):
+    students = Student.objects.filter(selected=True)
+    return render(request, 'events/student_list.html', {'students': students})</code></pre>
+
+    <p>Create templates in the events/templates/events/ directory:</p>
+    <p>fruit_list.html:</p>
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Fruit List&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Available Fruits:&lt;/h1&gt;
+    &lt;ul&gt;
+        {% for fruit in fruits %}
+        &lt;li&gt;{{ fruit.name }}&lt;/li&gt;
+        {% endfor %}
+    &lt;/ul&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <p>student_list.html:</p>
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Selected Students&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Selected Students for the Event:&lt;/h1&gt;
+    &lt;ol&gt;
+        {% for student in students %}
+        &lt;li&gt;{{ student.name }}&lt;/li&gt;
+        {% endfor %}
+    &lt;/ol&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <p>Step 6: Define URLs</p>
+    <p>Create URL patterns in events/urls.py:</p>
+    <pre><code>from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('fruits/', views.fruit_list, name='fruit_list'),
+    path('students/', views.student_list, name='student_list'),
+]</code></pre>
+
+    <p>Step 7: Include URLs in Project</p>
+    <p>Include the app's URLs in the project's main urls.py file:</p>
+    <pre><code>from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('events/', include('events.urls')),
+]</code></pre>
+
+    <p>Step 8: Run the Development Server</p>
+    <p>Start the Django development server:</p>
+    <pre><code>python manage.py runserver</code></pre>
+    <p>Check output in http://127.0.0.1:8000/events/fruits/ and http://127.0.0.1:8000/events/students/</p>
+
+    <h1>Project 2: Creating a Layout Template and Additional Pages</h1>
+    <p>Step 1: Create layout.html Template</p>
+    <p>Create a new HTML file named layout.html in your Django app's templates directory:</p>
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;{% block title %}My Website{% endblock %}&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;header&gt;
+        &lt;nav&gt;
+            &lt;ul&gt;
+                &lt;li&gt;&lt;a href="{% url 'home' %}"&gt;Home&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="{% url 'about_us' %}"&gt;About Us&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="{% url 'contact_us' %}"&gt;Contact Us&lt;/a&gt;&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/nav&gt;
+    &lt;/header&gt;
+
+    &lt;main&gt;
+        {% block content %}
+        {% endblock %}
+    &lt;/main&gt;
+
+    &lt;footer&gt;
+        &lt;p&gt;&copy; {{ year }} My Website. All rights reserved. Developed by {{ developer }}&lt;/p&gt;
+    &lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <p>Step 2: Create Additional Pages</p>
+    <p>Create three additional HTML files that will inherit from layout.html and define the content for each page.</p>
+    <p>Home Page (home.html):</p>
+    <pre><code>{% extends 'events/layout.html' %}
+{% block title %}Home - My Website{% endblock %}
+{% block content %}
+&lt;h1&gt;Welcome to My Website&lt;/h1&gt;
+{% endblock %}</code></pre>
+
+    <p>About Us Page (about_us.html):</p>
+    <pre><code>{% extends 'events/layout.html' %}
+{% block title %}About Us - My Website{% endblock %}
+{% block content %}
+&lt;h1&gt;About Us&lt;/h1&gt;
+{% endblock %}</code></pre>
+
+    <p>Contact Us Page (contact_us.html):</p>
+    <pre><code>{% extends 'events/layout.html' %}
+{% block title %}Contact Us - My Website{% endblock %}
+{% block content %}
+&lt;h1&gt;Contact Us&lt;/h1&gt;
+{% endblock %}</code></pre>
+
+    <p>Step 3: Define URL Patterns</p>
+    <p>Define URL patterns in your Django app's urls.py file (events/urls.py):</p>
+    <pre><code>from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('about/', views.about_us, name='about_us'),
+    path('contact/', views.contact_us, name='contact_us'),
+]</code></pre>
+
+    <p>Step 4: Create View Functions</p>
+    <p>Define view functions in your Django app's views.py file (events/views.py):</p>
+    <pre><code>from django.shortcuts import render
+
+def home(request):
+    return render(request, 'events/home.html')
+
+def about_us(request):
+    return render(request, 'events/about_us.html')
+
+def contact_us(request):
+    return render(request, 'events/contact_us.html')</code></pre>
+
+    <p>Step 5: Include URLs in Project</p>
+    <p>Include the app's URLs in the project's main urls.py file:</p>
+    <pre><code>from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('events.urls')),
+]</code></pre>
+
+    <p>Step 6: Update Settings</p>
+    <p>Make sure your Django project's settings (settings.py) include the 'DIRS' setting pointing to the templates
+        directory, and define the year and developer variables for the footer.</p>
+    <pre><code>TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        ...
+    },
+]
+
+year = 2024
+developer = 'Your Name'</code></pre>
+
+    <p>Step 7: Run the Development Server</p>
+    <p>Start the Django development server:</p>
+    <pre><code>python manage.py runserver</code></pre>
+    <p>Check output in http://127.0.0.1:8000/</p>
+
+    <h1>Project 3: Displaying Book Titles</h1>
+    <p>Step 1: Set Up Django Project and App</p>
+    <p>Create a new Django project and navigate into the project directory:</p>
+    <pre><code>django-admin startproject book_manager
+cd book_manager
+python manage.py startapp books</code></pre>
+
+    <p>Step 2: Define Models</p>
+    <p>Open the books/models.py file in your editor and define a model for Book.</p>
+    <pre><code>from django.db import models
+
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.title</code></pre>
+
+    <p>Step 3: Register Models in Admin</p>
+    <p>Open the books/admin.py file and register the Book model.</p>
+    <pre><code>from django.contrib import admin
+from .models import Book
+
+admin.site.register(Book)</code></pre>
+
+    <p>Step 4: Run Migrations</p>
+    <p>Apply the migrations to create the database tables:</p>
+    <pre><code>python manage.py makemigrations
+python manage.py migrate</code></pre>
+
+    <p>Step 5: Create View and Template</p>
+    <p>Create a view and template to display the list of book titles.</p>
+    <pre><code>from django.shortcuts import render
+from .models import Book
+
+def book_list(request):
+    books = Book.objects.all()
+    return render(request, 'books/book_list.html', {'books': books})</code></pre>
+
+    <p>Create a template in the books/templates/books/ directory:</p>
+    <p>book_list.html:</p>
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Book List&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Book Titles&lt;/h1&gt;
+    &lt;ul&gt;
+        {% for book in books %}
+        &lt;li&gt;{{ book.title }}&lt;/li&gt;
+        {% endfor %}
+    &lt;/ul&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <p>Step 6: Define URLs</p>
+    <p>Create URL patterns in books/urls.py:</p>
+    <pre><code>from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.book_list, name='book_list'),
+]</code></pre>
+
+    <p>Step 7: Include URLs in Project</p>
+    <p>Include the app's URLs in the project's main urls.py file:</p>
+    <pre><code>from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('books/', include('books.urls')),
+]</code></pre>
+
+    <p>Step 8: Run the Development Server</p>
+    <p>Start the Django development server:</p>
+    <pre><code>python manage.py runserver</code></pre>
+    <p>Check output in http://127.0.0.1:8000/books/</p>
+</body>
+
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Current Date and Time</h1>
+    <p>Step 1: Create a Django App named myapp.<br>
+        Step 2: Define a View: Open the views.py file inside your myapp directory and define a view to
+        display the current date and time. Here's an example:
+    </p>
+    <pre>
+        from django.http import HttpResponse
+        from datetime import datetime
+        
+        def current_datetime(request):
+            now = datetime.now()
+            html = f"&lt;html&gt;
+                &lt;body&gt;
+                    &lt;h1&gt;Current Date and Time:&lt;/h1&gt;
+                    &lt;p&gt;{now}&lt;/p&gt;
+                &lt;/body&gt;
+            &lt;/html&gt;"
+            return HttpResponse(html)
+    </pre>
+    <p>
+        Step 3: Create a URL Configuration: Open the urls.py file inside your myapp directory and
+        create a URL configuration to map the view you just defined to a URL. Here's an example:
+    </p>
+    <pre>
+        from django.urls import path
+        from . import views
+        
+        urlpatterns = [
+            path('current_datetime/', views.current_datetime, name='current_datetime'),
+        ]
+    </pre>
+    <p>
+        Step 4: Update Project URL Configuration: Open the urls.py file inside your project directory
+        (the directory containing settings.py) and include your app's URLs by importing them and
+        adding them to the urlpatterns list. Here's an example:
+    </p>
+    <pre>
+        from django.contrib import admin
+        from django.urls import path, include  # Import include
+        
+        urlpatterns = [
+            path('admin/', admin.site.urls),
+            path('myapp/', include('myapp.urls')),  # Include your app's URLs
+        ]
+    </pre>
+    <p>
+        Step 5: Run the Development Server: Start the Django development server to test your app. In
+        your terminal, make sure you're in the project directory (where manage.py is located) and run the
+        following command:
+    </p>
+    <pre>
+        python manage.py runserver
+    </pre>
+
+    <h2>Date and Time 4 hours ahead and 4 hours before</h2>
+    <p>Step 1: Update the View to Include Offsets: Modify the view in your Django app (views.py) to
+        calculate the current date and time along with the offsets. You'll need to import the timedelta class
+        from the datetime module to handle the offsets. Here's an example implementation:
+    </p>
+    <pre>
+        from django.http import HttpResponse
+        from datetime import datetime, timedelta
+        
+        def datetime_with_offsets(request):
+            now = datetime.now()
+            offset_hours = 4
+            # Calculate dates with offsets
+            four_hours_ahead = now + timedelta(hours=offset_hours)
+            four_hours_before = now - timedelta(hours=offset_hours)
+            html = f"&lt;html&gt;
+                &lt;body&gt;
+                    &lt;h1&gt;Current Date and Time with Offsets:&lt;/h1&gt;
+                    &lt;p&gt;Current: {now}&lt;/p&gt;
+                    &lt;p&gt;Four Hours Ahead: {four_hours_ahead}&lt;/p&gt;
+                    &lt;p&gt;Four Hours Before: {four_hours_before}&lt;/p&gt;
+                &lt;/body&gt;
+            &lt;/html&gt;"
+            return HttpResponse(html)
+    </pre>
+    <p>
+        Step 2: Update URL Configuration: Update the URL configuration (urls.py) for your app to
+        include the new view. You can create a new URL pattern to map the view to a specific URL. Here's
+        an example:
+    </p>
+    <pre>
+        from django.urls import path
+        from . import views
+        
+        urlpatterns = [
+            path('datetime_with_offsets/', views.datetime_with_offsets, name='datetime_with_offsets'),
+        ]
+    </pre>
+    <p>
+        Step 3: Test the App: Run the Django development server using the command python
+        manage.py runserver in your project directory. Then, navigate to
+        <a
+            href="http://127.0.0.1:8000/myapp/datetime_with_offsets/">http://127.0.0.1:8000/myapp/datetime_with_offsets/</a>
+        in your web browser to see the current date
+        and time with the specified offsets displayed on the page.
+    </p>
+
+</body>
+
+</html>

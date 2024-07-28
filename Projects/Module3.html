@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 3 Programs</title>
+</head>
+
+<body>
+    <h1>Module 3: Django Admin Interfaces and Model Forms</h1>
+
+    <h2>Program 1: Register Admin Interfaces, Perform Migrations, and Illustrate Data Entry Through Admin Forms</h2>
+    <p>In this program, we will add registration functionality to the Django admin interface, perform migrations, and
+        illustrate data entry through admin forms for student and course models created in Module 2.</p>
+
+    <h3>Step 1: Register the Models in the Admin Interface</h3>
+    <p>Open the <code>registration/admin.py</code> file and update it as follows to add registration functionality to
+        the Django admin interface:</p>
+    <pre>
+        <code>
+            from django.contrib import admin
+            from .models import Course, Student
+
+            @admin.register(Course)
+            class CourseAdmin(admin.ModelAdmin):
+                list_display = ['name', 'description']
+
+            @admin.register(Student)
+            class StudentAdmin(admin.ModelAdmin):
+                list_display = ['name', 'email']
+                filter_horizontal = ['courses']
+        </code>
+    </pre>
+
+    <h3>Step 2: Perform Migrations</h3>
+    <p>Apply the migrations to reflect the changes made to the admin interface and models:</p>
+    <pre>
+        <code>
+            python manage.py makemigrations
+            python manage.py migrate
+        </code>
+    </pre>
+
+    <h3>Step 3: Illustrate Data Entry Through Admin Forms</h3>
+    <p>Start the Django development server if it's not already running:</p>
+    <pre>
+        <code>
+            python manage.py runserver
+        </code>
+    </pre>
+    <p>Data Entry:</p>
+    <ul>
+        <li>Click on "Courses" under the "Registration" section to add courses. Enter the course name and description,
+            and click "Save."</li>
+        <li>Next, click on "Students" under the "Registration" section to add students. Enter the student's name, email,
+            and select the courses they are enrolled in from the list of available courses. You can use the filter
+            horizontal widget to make it easier to select multiple courses.</li>
+        <li>After adding students and courses, you can view the list of students enrolled in each course by clicking on
+            the course name in the "Courses" list view. This will show you a detailed view of the course, including the
+            list of enrolled students.</li>
+    </ul>
+
+    <h2>Program 2: Develop a Model Form for Student</h2>
+    <p>In this program, we will create a ModelForm for the Student model that includes fields for the project's topic,
+        languages used, and duration, using a model called Project.</p>
+
+    <h3>Step 1: Define the Project Model</h3>
+    <p>First, define the Project model in your Django app's <code>models.py</code> file:</p>
+    <pre>
+        <code>
+            from django.db import models
+
+            class Project(models.Model):
+                topic = models.CharField(max_length=255)
+                languages_used = models.CharField(max_length=255)
+                duration = models.IntegerField()  # Assuming duration is in days
+
+                def __str__(self):
+                    return self.topic
+        </code>
+    </pre>
+
+    <h3>Step 2: Create a ModelForm for the Student Model</h3>
+    <p>Next, create a ModelForm for the Student model with fields for the project's topic, languages used, and duration.
+        In your app's <code>forms.py</code> file, define the StudentForm:</p>
+    <pre>
+        <code>
+            from django import forms
+            from .models import Student
+
+            class StudentForm(forms.ModelForm):
+                project_topic = forms.CharField(max_length=255)
+                languages_used = forms.CharField(max_length=255)
+                duration = forms.IntegerField()
+
+                class Meta:
+                    model = Student
+                    fields = ['name', 'email']  # Include other fields from the Student model as needed
+        </code>
+    </pre>
+
+    <h3>Step 3: Update the Student Model</h3>
+    <p>Update the Student model in <code>models.py</code> to include a ForeignKey field for the Project model:</p>
+    <pre>
+        <code>
+            from django.db import models
+            from .project import Project  # Import the Project model
+
+            class Student(models.Model):
+                name = models.CharField(max_length=100)
+                email = models.EmailField()
+                project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
+
+                def __str__(self):
+                    return self.name
+        </code>
+    </pre>
+
+    <h3>Step 4: Update the Admin Interface for Project</h3>
+    <p>Register the Project model in the admin interface to manage projects:</p>
+    <pre>
+        <code>
+            from django.contrib import admin
+            from .models import Project
+
+            admin.site.register(Project)
+        </code>
+    </pre>
+
+    <h3>Step 5: Use the StudentForm in Views</h3>
+    <p>In your views where you handle student data, import and use the StudentForm:</p>
+    <pre>
+        <code>
+            from django.shortcuts import render
+            from .forms import StudentForm
+
+            def create_student(request):
+                if request.method == 'POST':
+                    form = StudentForm(request.POST)
+                    if form.is_valid():
+                        student = form.save(commit=False)
+                        # If the project data is included in the form, save it to the student object
+                        student.project_topic = form.cleaned_data['project_topic']
+                        student.languages_used = form.cleaned_data['languages_used']
+                        student.duration = form.cleaned_data['duration']
+                        student.save()
+                        return render(request, 'registration/student_created.html', {'student': student})
+                    else:
+                        form = StudentForm()
+                        return render(request, 'registration/student_form.html', {'form': form})
+        </code>
+    </pre>
+
+    <h3>Step 6: Create HTML Templates</h3>
+    <p>Create HTML templates for the student form and success message. For example, <code>student_form.html</code> and
+        <code>student_created.html</code>.</p>
+
+    <h3>Step 7: Include URLs</h3>
+    <p>Include URLs to access the views in your app's <code>urls.py</code> file:</p>
+    <pre>
+        <code>
+            from django.urls import path
+            from . import views
+
+            urlpatterns = [
+                path('create-student/', views.create_student, name='create_student'),
+                # Add other URL patterns as needed
+            ]
+        </code>
+    </pre>
+</body>
+
+</html>
